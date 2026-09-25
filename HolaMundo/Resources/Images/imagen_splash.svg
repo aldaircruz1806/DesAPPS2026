@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+
+  
+  <!-- Figura central de la caja de reparto -->
+  <polygon points="256,150 380,220 256,290 132,220" fill="#DFD8F7"/>
+  <polygon points="132,220 256,290 256,420 132,350" fill="#FFD300"/>
+  <polygon points="380,220 256,290 256,420 380,350" fill="#E6A800"/>
+</svg>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UltimaMilla.Repartidor.SplashPage"
+             BackgroundColor="#0833a2">
+
+    <VerticalStackLayout HorizontalOptions="Center"
+                         VerticalOptions="Center"
+                         Spacing="16">
+
+        <Image Source="imagen_splash.png"
+               HeightRequest="140"
+               WidthRequest="140"
+               Aspect="AspectFit" />
+
+        <Label Text="Última Milla APPS 2026"
+               TextColor="White"
+               FontSize="30"
+               FontAttributes="Bold"
+               HorizontalOptions="Center" />
+
+        <Label Text="Cargando..."
+               TextColor="#FF7A1A"
+               FontSize="14"
+               HorizontalOptions="Center" />
+
+    </VerticalStackLayout>
+
+</ContentPage>
