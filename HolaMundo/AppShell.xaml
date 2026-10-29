@@ -1,14 +1,21 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="HolaMundo.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:HolaMundo"
-    Title="HolaMundo">
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:UltimaMilla.Repartidor.Views"
+       x:Class="HolaMundo.AppShell"
+       FlyoutBehavior="Disabled">
+    <!-- El login queda fuera del TabBar: no muestra pestañas -->
+    <ShellContent Route="LoginPage"
+                  ContentTemplate="{DataTemplate views:LoginPage}" />
+    <!-- Cada ShellContent dentro del TabBar es una pestaña -->
+    <TabBar>
+        <ShellContent Title="Jornada"
+                      Route="JornadaPage"
+                      ContentTemplate="{DataTemplate views:JornadaPage}" />
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        <ShellContent Title="Histórico"
+                      Route="HistoricoPage"
+                      ContentTemplate="{DataTemplate views:HistoricoPage}" />
+    </TabBar>
 
 </Shell>

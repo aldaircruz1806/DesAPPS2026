@@ -430,5 +430,17 @@
         <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
+    <!-- Estilo para el nombre del cliente en cada parada -->
+    <Style x:Key="ClienteLabel" TargetType="Label">
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <!-- Estilo para textos secundarios (direccion, fecha) -->
+    <Style x:Key="TextoSecundario" TargetType="Label">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="SkyBlue" />
+    </Style>
+
 
 </ResourceDictionary>

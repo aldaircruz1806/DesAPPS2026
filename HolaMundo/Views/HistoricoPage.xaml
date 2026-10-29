@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:UltimaMilla.Repartidor.ViewModels"
+             xmlns:models="clr-namespace:UltimaMilla.Repartidor.Models"
+             x:Class="UltimaMilla.Repartidor.Views.HistoricoPage"
+             x:DataType="vm:HistoricoViewModel"
+             Title="Histórico">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*"
+          Padding="16"
+          RowSpacing="16">
+
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="12">
+
+            <Border Grid.Column="0"
+                    Padding="12"
+                    StrokeShape="RoundRectangle 12">
+                <VerticalStackLayout>
+                    <Label Text="{Binding EntregasEstaSemana}"
+                           FontSize="32"
+                           FontAttributes="Bold" />
+                    <Label Text="Últimos 7 días" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Padding="12"
+                    StrokeShape="RoundRectangle 12">
+                <VerticalStackLayout>
+                    <Label Text="{Binding EntregasEsteMes}"
+                           FontSize="32"
+                           FontAttributes="Bold" />
+                    <Label Text="Este mes" />
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
+
+        <Label Grid.Row="1"
+               Text="{Binding MensajeEstado}" />
+
+        <Label Grid.Row="2"
+               Text="Entregas de este mes"
+               FontAttributes="Bold" />
+
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding EntregasDelMes}">
+
+            <CollectionView.EmptyView>
+                <Label Text="Aún no hay entregas este mes." />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Parada">
+                    <VerticalStackLayout Padding="0,6">
+                        <Label Text="{Binding Cliente}" />
+                        <Label Text="{Binding ModificadoEn,
+                                      StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <ActivityIndicator Grid.RowSpan="4"
+                           IsRunning="{Binding EstaCargando}"
+                           IsVisible="{Binding EstaCargando}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:UltimaMilla.Repartidor.Models"
+             xmlns:vm="clr-namespace:UltimaMilla.Repartidor.ViewModels"
+             x:DataType="vm:JornadaViewModel"
+             x:Class="UltimaMilla.Repartidor.Views.JornadaPage"
+             Title="Mi Jornada">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,*"
+          RowSpacing="16" ColumnSpacing="5">
+
+        <!-- Encabezado: saludo al repartidor -->
+        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4">
+            <Label Text="{Binding Saludo}" FontSize="24" FontAttributes="Bold" />
+            <Label x:Name="FechaLabel" Style="{StaticResource TextoSecundario}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="3">
+            <Button Text="Actualizar" Command="{Binding RefrescaParadasCommand}" HorizontalOptions="End" Padding="10,4" />
+            <!--BOTON ALTERNAR TURNO -->
+            <Button Text="{Binding TextoBotonTurno}" Command="{Binding AlternarTurnoCommand}" HorizontalOptions="End" Padding="10,4" />
+            <ActivityIndicator IsRunning="{Binding IsRefrescando}" IsVisible="{Binding IsRefrescando}" />
+            <Label Text="{Binding MensajeEstado}" Style="{StaticResource TextoSecundario}"
+                   FontSize="12" HorizontalOptions="End" />
+        </VerticalStackLayout>
+
+        <!-- Tarjeta de resumen del día -->
+        <Grid Grid.Row="1" Padding="5" Grid.ColumnSpan="2" ColumnDefinitions="2*,2*,*">
+            <!-- Total de entregas -->
+            <Border Grid.Row="1"
+        Grid.Column="0"
+        Margin="0,0,6,0"
+        Padding="18"
+        BackgroundColor="#1F2937"
+        StrokeThickness="0"
+        StrokeShape="RoundRectangle 16">
+
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Total para hoy"
+               TextColor="#BDBDBD"
+               FontSize="14" />
+
+                    <Label Text="{Binding TotalEntregas}"
+               TextColor="#60A5FA"
+               FontSize="32"
+               FontAttributes="Bold" />
+                    
+                </VerticalStackLayout>
+            </Border>
+            <!-- Entregas completadas -->
+            <Border Grid.Row="1"
+        Grid.Column="1"
+        Margin="6,0,0,0"
+        Padding="18"
+        BackgroundColor="#1F2937"
+        StrokeThickness="0"
+        StrokeShape="RoundRectangle 16">
+
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Entregas completadas"
+               TextColor="#BDBDBD"
+               FontSize="14" />
+
+                    <Label Text="{Binding EntregasCompletadas}"
+               TextColor="#60A5FA"
+               FontSize="32"
+               FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+            <Switch Grid.Column="2" IsToggled="{Binding SinFiltro, Mode=TwoWay}" HorizontalOptions="End" VerticalOptions="Center">
+
+                <Switch.Triggers>
+                    <DataTrigger TargetType="Switch" Binding="{Binding IsRefrescando}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Switch.Triggers>
+
+            </Switch>
+        </Grid>
+
+        <!-- El listado: toda la fila 2, las dos columnas -->
+        <CollectionView Grid.Row="2" Grid.ColumnSpan="2"
+                        ItemsSource="{Binding Paradas}"
+                        SelectedItem="{Binding ParadaSeleccionada}" SelectionMode="Single">
+
+            <CollectionView.EmptyView>
+                <Label Text="No tienes paradas hoy"
+                    FontSize="18" TextColor="Gray" HorizontalOptions="Center" VerticalOptions="Center" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Parada">
+                    <Border Padding="14" Margin="0,4" StrokeShape="RoundRectangle 10"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray400}}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+
+                            <!-- Toque en toda la fila: navega al detalle -->
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnParadaTapped" />
+                            </Grid.GestureRecognizers>
+
+                            <!-- ...el resto de la fila queda igual... -->
+
+                            <Border Grid.Column="0" BackgroundColor="#1C7293"
+                                    WidthRequest="34" HeightRequest="34" StrokeShape="RoundRectangle 17">
+                                <Label Text="{Binding Numero}" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center" TextColor="White" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="{Binding Cliente}" Style="{StaticResource ClienteLabel}" />
+                                <Label Text="{Binding Direccion}" Style="{StaticResource TextoListas}" />
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="2" Text="{Binding Estado}" FontSize="12" VerticalOptions="Center">
+                                <Label.Style>
+                                    <Style TargetType="Label">
+                                        <Setter Property="TextColor" Value="Red" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="Pendiente">
+                                                <Setter Property="TextColor" Value="#FF8811" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="Entregado">
+                                                <Setter Property="TextColor" Value="#2E7D32" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Estado}" Value="Fallido">
+                                                <Setter Property="TextColor" Value="#C62828" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Label.Style>
+                            </Label>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>
