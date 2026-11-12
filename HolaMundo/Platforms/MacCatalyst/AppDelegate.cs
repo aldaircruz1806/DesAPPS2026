@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace HolaMundo
+namespace UltimaMilla.Repartidor
 {
     [Register("AppDelegate")]
     public class AppDelegate : MauiUIApplicationDelegate

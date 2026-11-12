@@ -1,0 +1,47 @@
+@host = http://localhost:5199
+ 
+### Todas las paradas (las seis)
+GET {{host}}/api/paradas
+ 
+### Solo las del repartidor 2 (dos)
+GET {{host}}/api/paradas?repartidorId=2
+ 
+### El "andamio" al descubierto: pido las de OTRO repartidor y me las da
+GET {{host}}/api/paradas?repartidorId=1
+ 
+### Una parada que existe
+GET {{host}}/api/paradas/2
+ 
+### Una parada que NO existe (debe dar 404)
+GET {{host}}/api/paradas/999
+ 
+### Crear una parada (debe dar 201 y devolver Id = 7)
+POST {{host}}/api/paradas
+Content-Type: application/json
+ 
+{
+  "repartidorId": 1,
+  "numero": 5,
+  "cliente": "Farmacia del Centro",
+  "direccion": "Av. Juarez 120",
+  "estado": 0,
+  "latitud": 20.6736,
+  "longitud": -103.3440
+}
+ 
+### Marcarla como entregada (debe dar 200 y devolver el objeto)
+PUT {{host}}/api/paradas/7
+Content-Type: application/json
+ 
+{
+  "repartidorId": 1,
+  "numero": 5,
+  "cliente": "Farmacia del Centro",
+  "direccion": "Av. Juarez 120",
+  "estado": 1,
+  "latitud": 20.6736,
+  "longitud": -103.3440
+}
+ 
+### Borrarla (debe dar 204, sin cuerpo)
+DELETE {{host}}/api/paradas/7

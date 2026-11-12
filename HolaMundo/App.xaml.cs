@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using UltimaMilla.Repartidor;
 
-namespace HolaMundo
+namespace UltimaMilla.Repartidor
 {
     public partial class App : Application
     {

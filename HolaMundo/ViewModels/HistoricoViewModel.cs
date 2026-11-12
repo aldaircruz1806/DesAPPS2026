@@ -35,10 +35,10 @@ public partial class HistoricoViewModel : ObservableObject
             var desdeSemana = ahora.AddDays(-7);
             var desdeMes = new DateTime(ahora.Year, ahora.Month, 1);
 
-            EntregasEstaSemana = todas.Count(p => p.Estado == "Entregado" && p.ModificadoEn >= desdeSemana);
+            EntregasEstaSemana = todas.Count(p => p.Estado == EstadoEntrega.Entregada && p.ModificadoEn >= desdeSemana);
 
             var delMes = todas
-                .Where(p => p.Estado == "Entregado" && p.ModificadoEn >= desdeMes)
+                .Where(p => p.Estado == EstadoEntrega.Entregada && p.ModificadoEn >= desdeMes)
                 .OrderByDescending(p => p.ModificadoEn)
                 .ToList();
 

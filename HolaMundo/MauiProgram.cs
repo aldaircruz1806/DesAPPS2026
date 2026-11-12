@@ -3,7 +3,7 @@ using UltimaMilla.Repartidor.Services;
 using UltimaMilla.Repartidor.ViewModels;
 using UltimaMilla.Repartidor.Views;
 
-namespace HolaMundo
+namespace UltimaMilla.Repartidor
 {
     public static class MauiProgram
     {
@@ -21,7 +21,14 @@ namespace HolaMundo
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
-
+#if DEBUG
+           
+            //var dbPath = Path.Combine(FileSystem.AppDataDirectory, "paradasUltMill.db3");
+            //if (System.IO.File.Exists(dbPath))
+            //{
+             //  System.IO.File.Delete(dbPath);
+            //}
+#endif
             //La DB si es singleton porque se necesita una sola instancia para toda la app, no se crean nuevas instancias cada vez que se llama a la DB
 
             builder.Services.AddTransient<JornadaViewModel>();
@@ -40,6 +47,8 @@ namespace HolaMundo
 
             builder.Services.AddTransient<HistoricoViewModel>();
             builder.Services.AddTransient<HistoricoPage>();
+            //REGISTRO UBICACION SERVICE 6.5
+            builder.Services.AddSingleton<UbicacionService>();
 
 
             return builder.Build();

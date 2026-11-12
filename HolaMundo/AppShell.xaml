@@ -2,20 +2,31 @@
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:views="clr-namespace:UltimaMilla.Repartidor.Views"
-       x:Class="HolaMundo.AppShell"
-       FlyoutBehavior="Disabled">
-    <!-- El login queda fuera del TabBar: no muestra pestañas -->
+       x:Class="UltimaMilla.Repartidor.AppShell"
+       FlyoutBehavior="Flyout">
+
+    <!-- El login queda fuera: no muestra pestañas ni menú lateral -->
     <ShellContent Route="LoginPage"
                   ContentTemplate="{DataTemplate views:LoginPage}" />
-    <!-- Cada ShellContent dentro del TabBar es una pestaña -->
-    <TabBar>
-        <ShellContent Title="Jornada"
-                      Route="JornadaPage"
-                      ContentTemplate="{DataTemplate views:JornadaPage}" />
 
-        <ShellContent Title="Histórico"
-                      Route="HistoricoPage"
-                      ContentTemplate="{DataTemplate views:HistoricoPage}" />
-    </TabBar>
+    <!-- RETO 6.2 AGREGA ICONOS A LAS PESTAÑAS Y MENU DE CERRAR SESION El FlyoutItem agrupa las pestañas de navegación y las muestra en el menú lateral -->
+    <FlyoutItem Title="Menú" FlyoutDisplayOptions="AsMultipleItems">
+
+        <ShellContent Title="Jornada" Route="JornadaPage" ContentTemplate="{DataTemplate views:JornadaPage}">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="OpenSansRegular" Glyph="📦" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <ShellContent Title="Histórico" Route="HistoricoPage" ContentTemplate="{DataTemplate views:HistoricoPage}">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="OpenSansRegular" Glyph="📅" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+    </FlyoutItem>
+
+    <!-- La acción suelta en el menú lateral -->
+    <MenuItem Text="Cerrar sesión" Clicked="OnCerrarSesionClicked" />
 
 </Shell>

@@ -32,7 +32,7 @@ namespace UltimaMilla.Repartidor.Services
 
             if (!entregadasTambien)
             {
-                query = query.Where(p => p.Estado != "Entregado");
+                query = query.Where(p => p.Estado != EstadoEntrega.Entregada);
             }
 
             return await query.OrderBy(p => p.Numero).ToListAsync();

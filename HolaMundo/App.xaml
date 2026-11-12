@@ -1,10 +1,15 @@
-﻿<?xml version = "1.0" encoding = "UTF-8" ?>
-<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:HolaMundo"
-             x:Class="HolaMundo.App">
+             xmlns:local="clr-namespace:UltimaMilla.Repartidor"
+             xmlns:conv="clr-namespace:UltimaMilla.Repartidor.Converters"
+             x:Class="UltimaMilla.Repartidor.App">
+
     <Application.Resources>
         <ResourceDictionary>
+            <!-- NUEVOS CONVERTIDORES -->
+            <conv:EstadoAColorConverter x:Key="EstadoAColor" />
+            <conv:EstadoADisplayConverter x:Key="EstadoADisplay" />
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />

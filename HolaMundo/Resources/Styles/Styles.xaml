@@ -439,7 +439,7 @@
     <!-- Estilo para textos secundarios (direccion, fecha) -->
     <Style x:Key="TextoSecundario" TargetType="Label">
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="TextColor" Value="SkyBlue" />
+        <Setter Property="TextColor" Value="bLUE" />
     </Style>
 
 

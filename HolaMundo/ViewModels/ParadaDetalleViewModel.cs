@@ -13,21 +13,30 @@ public partial class ParadaDetalleViewModel : ObservableObject
     [ObservableProperty] private int _paradaId;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(PuedeEditar))][NotifyCanExecuteChangedFor(nameof(MarcarEntregadaCommand))][NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ReintentarEntregaCommand))] private Parada? _parada;
+    // Se eliminó NotifyPropertyChangedFor(PuedeEditar) porque ya delegamos en ReglasEntrega
+    [NotifyCanExecuteChangedFor(nameof(MarcarEntregadaCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ReintentarEntregaCommand))]
+    private Parada? _parada;
+
     [ObservableProperty] private string _mensajeEstado = string.Empty;
-    [ObservableProperty][NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))] private string _razonFallo = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(PuedeEditar))][NotifyCanExecuteChangedFor(nameof(MarcarEntregadaCommand))][NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ReintentarEntregaCommand))]private bool _estaGuardando;
+    [NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
+    private string _razonFallo = string.Empty;
+
+    [ObservableProperty]
+    // Se eliminó NotifyPropertyChangedFor(PuedeEditar)
+    [NotifyCanExecuteChangedFor(nameof(MarcarEntregadaCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ReintentarEntregaCommand))]
+    private bool _estaGuardando;
 
     public ParadaDetalleViewModel(ParadasDatabase paradasDatabase)
     {
         _paradasDatabase = paradasDatabase;
     }
 
-    //Los hooks On<Propiedad>Changed no pueden ser async, por lo que llamamos a un método async desde allí como una tarea aparte fire-and-forget.
     partial void OnParadaIdChanged(int value)
     {
         _ = CargarAsync();
@@ -54,12 +63,11 @@ public partial class ParadaDetalleViewModel : ObservableObject
 
         try
         {
-            parada.Estado = "Entregado";
+            parada.Estado = EstadoEntrega.Entregada; //EJERCICIO 7
             parada.RazonFallo = null;
             parada.ModificadoEn = DateTime.Now;
 
             await _paradasDatabase.SaveParadaAsync(parada);
-
             MensajeEstado = "Parada marcada como entregada.";
         }
         catch (Exception ex)
@@ -68,8 +76,7 @@ public partial class ParadaDetalleViewModel : ObservableObject
             parada.RazonFallo = razonAnterior;
             parada.ModificadoEn = fechaAnterior;
 
-            MensajeEstado =
-                $"Error al marcar la parada como entregada: {ex.Message}";
+            MensajeEstado = $"Error al marcar la parada como entregada: {ex.Message}";
             return;
         }
         finally
@@ -97,12 +104,11 @@ public partial class ParadaDetalleViewModel : ObservableObject
 
         try
         {
-            parada.Estado = "Fallido";
+            parada.Estado = EstadoEntrega.Fallida; //EJERCICIO 7
             parada.RazonFallo = RazonFallo.Trim();
             parada.ModificadoEn = DateTime.Now;
 
             await _paradasDatabase.SaveParadaAsync(parada);
-
             MensajeEstado = "Parada marcada como fallida.";
         }
         catch (Exception ex)
@@ -111,8 +117,7 @@ public partial class ParadaDetalleViewModel : ObservableObject
             parada.RazonFallo = razonAnterior;
             parada.ModificadoEn = fechaAnterior;
 
-            MensajeEstado =
-                $"Error al marcar la parada como fallida: {ex.Message}";
+            MensajeEstado = $"Error al marcar la parada como fallida: {ex.Message}";
             return;
         }
         finally
@@ -123,22 +128,7 @@ public partial class ParadaDetalleViewModel : ObservableObject
 
         await Shell.Current.GoToAsync("..");
     }
-    private bool PuedeMarcarEntregada()
-    {
-        return PuedeEditar;
-    }
 
-    private bool PuedeMarcarFallida()
-    {
-        return PuedeEditar &&
-               !string.IsNullOrWhiteSpace(RazonFallo);
-    }
-
-    private bool PuedeReintentarEntrega()
-    {
-        return PuedeEditar &&
-               Parada?.Estado == "Fallido";
-    }
     [RelayCommand(CanExecute = nameof(PuedeReintentarEntrega))]
     private async Task ReintentarEntregaAsync()
     {
@@ -155,10 +145,11 @@ public partial class ParadaDetalleViewModel : ObservableObject
 
         try
         {
-            parada.Estado = "Pendiente";
+            parada.Estado = EstadoEntrega.Pendiente; //EJERCICIO 7
             parada.RazonFallo = null;
             parada.ModificadoEn = DateTime.Now;
-            await Task.Delay(5000); // Solo para probar durante 5 segundos
+
+            await Task.Delay(5000); //Solo para probar por 5 segundos
             await _paradasDatabase.SaveParadaAsync(parada);
 
             RazonFallo = string.Empty;
@@ -170,17 +161,39 @@ public partial class ParadaDetalleViewModel : ObservableObject
             parada.RazonFallo = razonAnterior;
             parada.ModificadoEn = fechaAnterior;
 
-            MensajeEstado =
-                $"Error al reintentar la entrega: {ex.Message}";
+            MensajeEstado = $"Error al reintentar la entrega: {ex.Message}";
+            return;
         }
         finally
         {
             OnPropertyChanged(nameof(Parada));
             EstaGuardando = false;
         }
+
+        await Shell.Current.GoToAsync("..");
     }
-    public bool PuedeEditar =>
-    Parada is not null &&
-    Parada.Estado != "Entregado" &&
-    !EstaGuardando;
+
+    //EJERCICIO 7
+    private bool PuedeMarcarEntregada()
+    {
+        return Parada is not null &&
+               ReglasEntrega.PuedeEntregar(Parada) &&
+               !EstaGuardando;
+    }
+
+    private bool PuedeMarcarFallida()
+    {
+        return Parada is not null &&
+               ReglasEntrega.PuedeFallar(Parada) &&
+               !string.IsNullOrWhiteSpace(RazonFallo) &&
+               RazonFallo.Trim().Length >= 10 && // RETO N5, SE AGREGA UNA REGLA AL ESCRIBIR Y CON TRIM VALIDA QUE SI SE ESCRIBEN ESPACIOS VACIOS NO VALGAN
+               !EstaGuardando;
+    }
+
+    private bool PuedeReintentarEntrega()
+    {
+        return Parada is not null &&
+               ReglasEntrega.PuedeReintentar(Parada) &&
+               !EstaGuardando;
+    }
 }
