@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Elementos de la solución/">
+    <File Path="Dockerfile.txt" />
+  </Folder>
   <Project Path="APIRest_min/APIRest_min.csproj" Id="912c532f-288d-4f1a-8842-d16775227640" />
   <Project Path="HolaMundo/UltimaMilla.Repartidor.csproj">
     <Deploy Solution="Debug|*" />
