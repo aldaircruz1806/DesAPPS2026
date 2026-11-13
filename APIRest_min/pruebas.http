@@ -1,4 +1,10 @@
-@host = http://localhost:5199
+@local = http://localhost:5199
+@nube  = https://ultimamilla-api-lopez.onrender.com
+ 
+# Deja activa UNA sola de las dos líneas siguientes:
+@host = {{nube}}
+# @host = {{local}}
+
  
 ### Todas las paradas (las seis)
 GET {{host}}/api/paradas

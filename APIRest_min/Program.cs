@@ -44,11 +44,33 @@ var paradas = new List<Parada>
 
 var siguienteId = 7;
 
+// --- GET salud (Health Check) ---
+app.MapGet("/api/salud", () => Results.Ok(new { estado = "ok", hora = DateTime.UtcNow }));
+
+
 // --- GET todas, con filtro opcional por repartidor ------------------
 app.MapGet("/api/paradas", (int? repartidorId) =>
     repartidorId is null
         ? paradas
         : paradas.Where(p => p.RepartidorId == repartidorId).ToList());
+
+// --- GET resumen de paradas ---
+app.MapGet("/api/paradas/resumen", (int? repartidorId) =>
+{
+    var paradasFiltradas = repartidorId is null
+        ? paradas
+        : paradas.Where(p => p.RepartidorId == repartidorId).ToList();
+
+    var resumen = new
+    {
+        Total = paradasFiltradas.Count,
+        Pendientes = paradasFiltradas.Count(p => p.Estado == EstadoEntrega.Pendiente),
+        Entregadas = paradasFiltradas.Count(p => p.Estado == EstadoEntrega.Entregada),
+        Fallidas = paradasFiltradas.Count(p => p.Estado == EstadoEntrega.Fallida)
+    };
+
+    return Results.Ok(resumen);
+});
 
 // --- GET una ---------------------------------------------------------
 app.MapGet("/api/paradas/{id:int}", (int id) =>
@@ -57,10 +79,16 @@ app.MapGet("/api/paradas/{id:int}", (int id) =>
     return parada is null ? Results.NotFound() : Results.Ok(parada);
 });
 
-// --- POST crear ------------------------------------------------------
+// --- POST crear (Con validación) ---
 app.MapPost("/api/paradas", (Parada nueva) =>
 {
-    nueva.Id = siguienteId++;              // el Id lo asigna el servidor, nunca el cliente
+    // Validación: Si el cliente o la dirección vienen vacíos, regresa 400 Bad Request
+    if (string.IsNullOrWhiteSpace(nueva.Cliente) || string.IsNullOrWhiteSpace(nueva.Direccion))
+    {
+        return Results.BadRequest(new { error = "El nombre del cliente y la dirección son obligatorios." });
+    }
+
+    nueva.Id = siguienteId++;
     nueva.ModificadoEn = DateTime.UtcNow;
     paradas.Add(nueva);
 
