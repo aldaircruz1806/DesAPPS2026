@@ -51,3 +51,23 @@ Content-Type: application/json
  
 ### Borrarla (debe dar 204, sin cuerpo)
 DELETE {{host}}/api/paradas/7
+
+  ### Saber si el servidor está vivo
+GET {{host}}/api/salud
+
+  ### Ver el conteo del repartidor 1
+GET {{host}}/api/paradas/resumen?repartidorId=1
+### Intentar crear una parada SIN cliente
+
+POST {{host}}/api/paradas
+Content-Type: application/json
+
+{
+  "repartidorId": 1,
+  "numero": 8,
+  "cliente": "", 
+  "direccion": "Calle Falsa 123",
+  "estado": 0,
+  "latitud": 20.6,
+  "longitud": -103.3
+}

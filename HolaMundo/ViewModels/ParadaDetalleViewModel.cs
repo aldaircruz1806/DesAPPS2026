@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Net;
+using System.Net.Http;
 using UltimaMilla.Repartidor.Models;
 using UltimaMilla.Repartidor.Services;
 
@@ -8,12 +10,11 @@ namespace UltimaMilla.Repartidor.ViewModels;
 [QueryProperty(nameof(ParadaId), "ParadaId")]
 public partial class ParadaDetalleViewModel : ObservableObject
 {
-    private readonly ParadasDatabase _paradasDatabase;
+    private readonly ApiParadasService _api;
 
     [ObservableProperty] private int _paradaId;
 
     [ObservableProperty]
-    // Se eliminó NotifyPropertyChangedFor(PuedeEditar) porque ya delegamos en ReglasEntrega
     [NotifyCanExecuteChangedFor(nameof(MarcarEntregadaCommand))]
     [NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
     [NotifyCanExecuteChangedFor(nameof(ReintentarEntregaCommand))]
@@ -26,15 +27,14 @@ public partial class ParadaDetalleViewModel : ObservableObject
     private string _razonFallo = string.Empty;
 
     [ObservableProperty]
-    // Se eliminó NotifyPropertyChangedFor(PuedeEditar)
     [NotifyCanExecuteChangedFor(nameof(MarcarEntregadaCommand))]
     [NotifyCanExecuteChangedFor(nameof(MarcarFallidaCommand))]
     [NotifyCanExecuteChangedFor(nameof(ReintentarEntregaCommand))]
     private bool _estaGuardando;
 
-    public ParadaDetalleViewModel(ParadasDatabase paradasDatabase)
+    public ParadaDetalleViewModel(ApiParadasService api)
     {
-        _paradasDatabase = paradasDatabase;
+        _api = api;
     }
 
     partial void OnParadaIdChanged(int value)
@@ -44,7 +44,26 @@ public partial class ParadaDetalleViewModel : ObservableObject
 
     private async Task CargarAsync()
     {
-        Parada = await _paradasDatabase.GetParadaAsync(new Parada { Id = ParadaId });
+        try
+        {
+            MensajeEstado = string.Empty;
+            Parada = await _api.ObtenerParadaAsync(ParadaId);
+
+            if (Parada is null)
+                MensajeEstado = "Esa parada ya no existe en el servidor.";
+        }
+        catch (HttpRequestException ex)
+        {
+            MensajeEstado = FormatearErrorHttp(ex, "al cargar la parada");
+        }
+        catch (TaskCanceledException)
+        {
+            MensajeEstado = "Tiempo de espera agotado al cargar la parada.";
+        }
+        catch (Exception ex)
+        {
+            MensajeEstado = $"Error al cargar la parada: {ex.Message}";
+        }
     }
 
     [RelayCommand(CanExecute = nameof(PuedeMarcarEntregada))]
@@ -59,33 +78,38 @@ public partial class ParadaDetalleViewModel : ObservableObject
         var parada = Parada;
         var estadoAnterior = parada.Estado;
         var razonAnterior = parada.RazonFallo;
-        var fechaAnterior = parada.ModificadoEn;
 
         try
         {
-            parada.Estado = EstadoEntrega.Entregada; //EJERCICIO 7
+            parada.Estado = EstadoEntrega.Entregada;
             parada.RazonFallo = null;
-            parada.ModificadoEn = DateTime.Now;
 
-            await _paradasDatabase.SaveParadaAsync(parada);
-            MensajeEstado = "Parada marcada como entregada.";
+            Parada = await _api.ActualizarParadaAsync(parada);
+            await Shell.Current.GoToAsync("..");
+        }
+        catch (HttpRequestException ex)
+        {
+            parada.Estado = estadoAnterior;
+            parada.RazonFallo = razonAnterior;
+            MensajeEstado = FormatearErrorHttp(ex, "al guardar");
+        }
+        catch (TaskCanceledException)
+        {
+            parada.Estado = estadoAnterior;
+            parada.RazonFallo = razonAnterior;
+            MensajeEstado = "No se pudo guardar: tiempo de espera agotado.";
         }
         catch (Exception ex)
         {
             parada.Estado = estadoAnterior;
             parada.RazonFallo = razonAnterior;
-            parada.ModificadoEn = fechaAnterior;
-
             MensajeEstado = $"Error al marcar la parada como entregada: {ex.Message}";
-            return;
         }
         finally
         {
             OnPropertyChanged(nameof(Parada));
             EstaGuardando = false;
         }
-
-        await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand(CanExecute = nameof(PuedeMarcarFallida))]
@@ -100,33 +124,38 @@ public partial class ParadaDetalleViewModel : ObservableObject
         var parada = Parada;
         var estadoAnterior = parada.Estado;
         var razonAnterior = parada.RazonFallo;
-        var fechaAnterior = parada.ModificadoEn;
 
         try
         {
-            parada.Estado = EstadoEntrega.Fallida; //EJERCICIO 7
+            parada.Estado = EstadoEntrega.Fallida;
             parada.RazonFallo = RazonFallo.Trim();
-            parada.ModificadoEn = DateTime.Now;
 
-            await _paradasDatabase.SaveParadaAsync(parada);
-            MensajeEstado = "Parada marcada como fallida.";
+            Parada = await _api.ActualizarParadaAsync(parada);
+            await Shell.Current.GoToAsync("..");
+        }
+        catch (HttpRequestException ex)
+        {
+            parada.Estado = estadoAnterior;
+            parada.RazonFallo = razonAnterior;
+            MensajeEstado = FormatearErrorHttp(ex, "al guardar");
+        }
+        catch (TaskCanceledException)
+        {
+            parada.Estado = estadoAnterior;
+            parada.RazonFallo = razonAnterior;
+            MensajeEstado = "No se pudo guardar: tiempo de espera agotado.";
         }
         catch (Exception ex)
         {
             parada.Estado = estadoAnterior;
             parada.RazonFallo = razonAnterior;
-            parada.ModificadoEn = fechaAnterior;
-
             MensajeEstado = $"Error al marcar la parada como fallida: {ex.Message}";
-            return;
         }
         finally
         {
             OnPropertyChanged(nameof(Parada));
             EstaGuardando = false;
         }
-
-        await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand(CanExecute = nameof(PuedeReintentarEntrega))]
@@ -141,39 +170,52 @@ public partial class ParadaDetalleViewModel : ObservableObject
         var parada = Parada;
         var estadoAnterior = parada.Estado;
         var razonAnterior = parada.RazonFallo;
-        var fechaAnterior = parada.ModificadoEn;
 
         try
         {
-            parada.Estado = EstadoEntrega.Pendiente; //EJERCICIO 7
+            parada.Estado = EstadoEntrega.Pendiente;
             parada.RazonFallo = null;
-            parada.ModificadoEn = DateTime.Now;
 
-            await Task.Delay(5000); //Solo para probar por 5 segundos
-            await _paradasDatabase.SaveParadaAsync(parada);
-
+            Parada = await _api.ActualizarParadaAsync(parada);
             RazonFallo = string.Empty;
-            MensajeEstado = "Entrega lista para reintentarse.";
+            await Shell.Current.GoToAsync("..");
+        }
+        catch (HttpRequestException ex)
+        {
+            parada.Estado = estadoAnterior;
+            parada.RazonFallo = razonAnterior;
+            MensajeEstado = FormatearErrorHttp(ex, "al guardar");
+        }
+        catch (TaskCanceledException)
+        {
+            parada.Estado = estadoAnterior;
+            parada.RazonFallo = razonAnterior;
+            MensajeEstado = "No se pudo guardar: tiempo de espera agotado.";
         }
         catch (Exception ex)
         {
             parada.Estado = estadoAnterior;
             parada.RazonFallo = razonAnterior;
-            parada.ModificadoEn = fechaAnterior;
-
             MensajeEstado = $"Error al reintentar la entrega: {ex.Message}";
-            return;
         }
         finally
         {
             OnPropertyChanged(nameof(Parada));
             EstaGuardando = false;
         }
-
-        await Shell.Current.GoToAsync("..");
     }
 
-    //EJERCICIO 7
+    private static string FormatearErrorHttp(HttpRequestException ex, string contexto)
+    {
+        return ex.StatusCode switch
+        {
+            null => $"Sin conexión con el servidor {contexto}: {ex.Message}",
+            HttpStatusCode.NotFound => $"La parada ya no existe en el servidor (404) {contexto}.",
+            HttpStatusCode.InternalServerError => $"Error interno del servidor (500) {contexto}. Intenta más tarde.",
+            _ => $"Error HTTP ({(int)ex.StatusCode}) {contexto}: {ex.Message}"
+        };
+    }
+
     private bool PuedeMarcarEntregada()
     {
         return Parada is not null &&
@@ -186,7 +228,7 @@ public partial class ParadaDetalleViewModel : ObservableObject
         return Parada is not null &&
                ReglasEntrega.PuedeFallar(Parada) &&
                !string.IsNullOrWhiteSpace(RazonFallo) &&
-               RazonFallo.Trim().Length >= 10 && // RETO N5, SE AGREGA UNA REGLA AL ESCRIBIR Y CON TRIM VALIDA QUE SI SE ESCRIBEN ESPACIOS VACIOS NO VALGAN
+               RazonFallo.Trim().Length >= 10 &&
                !EstaGuardando;
     }
 

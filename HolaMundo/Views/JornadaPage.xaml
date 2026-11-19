@@ -7,7 +7,7 @@
              x:Class="UltimaMilla.Repartidor.Views.JornadaPage"
              Title="Mi Jornada">
 
-    <Grid Padding="20" RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,*"
+    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,*" ColumnDefinitions="*,*"
           RowSpacing="16" ColumnSpacing="5">
 
         <!-- Encabezado: saludo al repartidor -->
@@ -30,22 +30,55 @@
                    FontAttributes="Bold" />
 
             <ActivityIndicator IsRunning="{Binding IsRefrescando}" IsVisible="{Binding IsRefrescando}" />
-            <Label Text="{Binding MensajeEstado}" Style="{StaticResource TextoSecundario}"
-                   FontSize="12" HorizontalOptions="End" />
         </VerticalStackLayout>
 
-        <!-- Tarjeta de resumen del día -->
+        <!-- Fila 1: Banner de estado y error con botón Reintentar -->
+        <Grid Grid.Row="1" Grid.ColumnSpan="2"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="10"
+              IsVisible="{Binding HayBanner}">
+
+            <Label Grid.Column="0"
+                   Text="{Binding TextoBanner}"
+                   FontSize="14"
+                   LineBreakMode="WordWrap"
+                   VerticalOptions="Center">
+                <Label.Style>
+                    <Style TargetType="Label">
+                        <Setter Property="TextColor"
+                                Value="{AppThemeBinding Light=#1C7293, Dark=#8C9EFF}" />
+                        <Style.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding HayError}" Value="True">
+                                <Setter Property="TextColor"
+                                        Value="{AppThemeBinding Light=#C62828, Dark=#EF5350}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Label.Style>
+            </Label>
+
+            <Button Grid.Column="1"
+                    Text="Reintentar"
+                    Command="{Binding RefrescaParadasCommand}"
+                    IsVisible="{Binding HayError}"
+                    VerticalOptions="Center"
+                    Padding="12,6"
+                    BackgroundColor="{AppThemeBinding Light=#C62828, Dark=#EF5350}"
+                    TextColor="White" />
+        </Grid>
+
+        <!-- Fila 2: Tarjeta de resumen del día -->
         <!-- RETO N2 Cambiamos las columnas a *,*,*,Auto para que quepan 3 tarjetas y el switch -->
-        <Grid Grid.Row="1" Padding="5" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*,Auto">
-            
+        <Grid Grid.Row="2" Padding="5" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*,Auto">
+
             <!-- 1. Total de entregas -->
-            <Border Grid.Row="1" Grid.Column="0" Margin="0,0,4,0" Padding="12" BackgroundColor="#374151" StrokeThickness="0" StrokeShape="RoundRectangle 16">
+            <Border Grid.Row="0" Grid.Column="0" Margin="0,0,4,0" Padding="12" BackgroundColor="#374151" StrokeThickness="0" StrokeShape="RoundRectangle 16">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Total" TextColor="#BDBDBD" FontSize="14" />
                     <Label Text="{Binding TotalEntregas}" TextColor="#60A5FA" FontSize="28" FontAttributes="Bold" />
                 </VerticalStackLayout>
             </Border>
-            
+
             <!-- 2. Entregas completadas -->
             <Border Grid.Row="0" Grid.Column="1" Margin="4,0,4,0" Padding="12" BackgroundColor="#374151" StrokeThickness="0" StrokeShape="RoundRectangle 16">
                 <VerticalStackLayout Spacing="8">
@@ -61,7 +94,7 @@
                     <Label Text="{Binding EntregasPendientes}" TextColor="#FF8811" FontSize="28" FontAttributes="Bold" />
                 </VerticalStackLayout>
             </Border>
-            
+
             <!-- El Switch -->
             <Switch Grid.Row="0" Grid.Column="3" IsToggled="{Binding SinFiltro, Mode=TwoWay}" HorizontalOptions="End" VerticalOptions="Center">
                 <Switch.Triggers>
@@ -71,8 +104,9 @@
                 </Switch.Triggers>
             </Switch>
         </Grid>
-        <!-- El listado: toda la fila 2, las dos columnas -->
-        <CollectionView Grid.Row="2" Grid.ColumnSpan="2"
+
+        <!-- Fila 3: El listado, las dos columnas -->
+        <CollectionView Grid.Row="3" Grid.ColumnSpan="2"
                         ItemsSource="{Binding Paradas}"
                         SelectedItem="{Binding ParadaSeleccionada}" SelectionMode="Single">
 

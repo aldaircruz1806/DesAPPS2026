@@ -2,7 +2,7 @@
 using UltimaMilla.Repartidor.Services;
 using UltimaMilla.Repartidor.ViewModels;
 using UltimaMilla.Repartidor.Views;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace UltimaMilla.Repartidor
 {
     public static class MauiProgram
@@ -49,6 +49,15 @@ namespace UltimaMilla.Repartidor
             builder.Services.AddTransient<HistoricoPage>();
             //REGISTRO UBICACION SERVICE 6.5
             builder.Services.AddSingleton<UbicacionService>();
+
+
+            builder.Services.AddHttpClient<ApiParadasService>(client =>
+            {
+                client.BaseAddress = new Uri(ApiConfig.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
+
+
 
 
             return builder.Build();
