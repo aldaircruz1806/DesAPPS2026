@@ -68,7 +68,7 @@ namespace UltimaMilla.Repartidor
                 c.BaseAddress = new Uri(ApiConfig.BaseUrl);
                 c.Timeout = TimeSpan.FromSeconds(10);
             });
-            });
+           
 
 
             return builder.Build();
