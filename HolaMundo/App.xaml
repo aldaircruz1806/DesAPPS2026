@@ -8,6 +8,7 @@
         <ResourceDictionary>
             <!-- NUEVOS CONVERTIDORES -->
             <conv:EstadoAColorConverter x:Key="EstadoAColor" />
+            <conv:UtcALocalConverter x:Key="UtcALocal" />
             <conv:EstadoADisplayConverter x:Key="EstadoADisplay" />
 
             <ResourceDictionary.MergedDictionaries>

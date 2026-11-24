@@ -10,12 +10,11 @@ namespace UltimaMilla.Repartidor.ViewModels;
 
 public partial class JornadaViewModel : ObservableObject
 {
-    private readonly ApiParadasService _api;            // <- entra
+    private readonly ApiParadasService _api;
+    private readonly ApiTurnosService _apiTurnos;
     private readonly RepartidorDatabase _repartidorDatabase;
     private readonly SesionActual _sesionActual;
-    private readonly TurnoDatabase _turnoDatabase;
     private readonly UbicacionService _ubicacionService;
-    // ParadasDatabase sale de ESTE ViewModel (regresa en el Ej. 11)
 
     // Temporizador para el tiempo activo del turno (Reto 6.2)
     private readonly IDispatcherTimer _timer;
@@ -54,16 +53,17 @@ public partial class JornadaViewModel : ObservableObject
 
     public ObservableCollection<Parada> Paradas { get; } = new();
 
-    public JornadaViewModel(ApiParadasService api,
+    public JornadaViewModel(
+        ApiParadasService api,
+        ApiTurnosService apiTurnos,
         RepartidorDatabase repartidorDatabase,
         SesionActual sesionActual,
-        TurnoDatabase turnoDatabase,
         UbicacionService ubicacionService)
     {
         _api = api;
+        _apiTurnos = apiTurnos;
         _repartidorDatabase = repartidorDatabase;
         _sesionActual = sesionActual;
-        _turnoDatabase = turnoDatabase;
         _ubicacionService = ubicacionService;
 
         _timer = Application.Current!.Dispatcher.CreateTimer();
@@ -125,7 +125,8 @@ public partial class JornadaViewModel : ObservableObject
 
             FormarSaludo(repartidor.Nombre);
 
-            TurnoActivo = await _turnoDatabase.GetTurnoAbiertoAsync();
+            // Restaura el turno abierto desde el servidor
+            TurnoActivo = await _apiTurnos.GetTurnoAbiertoAsync();
             if (TurnoActivo != null)
             {
                 CalcularTiempo();
@@ -138,7 +139,7 @@ public partial class JornadaViewModel : ObservableObject
             }
 
             // Las paradas vienen del servidor (API REST)
-            var paradas = await _api.ObtenerParadasAsync(_sesionActual.RepartidorId); //SI SE CAMBIA MANUALMENTE el servidor confía ciegamente en el repartidorId enviado por el cliente en la URL sin validar identidad
+            var paradas = await _api.ObtenerParadasAsync(_sesionActual.RepartidorId);
 
             var miUbicacion = await _ubicacionService.ObtenerUbicacionActualAsync();
             if (miUbicacion == null)
@@ -239,27 +240,39 @@ public partial class JornadaViewModel : ObservableObject
     [RelayCommand]
     private async Task AlternarTurnoAsync()
     {
-        if (TurnoActivo is null)
+        try
         {
-            await _turnoDatabase.IniciarTurnoAsync();
-            _timer.Start();
-        }
-        else
-        {
-            await _turnoDatabase.CerrarTurnoAsync(TurnoActivo);
-            _timer.Stop();
-            TiempoTranscurrido = string.Empty;
-        }
+            IsRefrescando = true;
+            MensajeError = string.Empty;
 
-        TurnoActivo = await _turnoDatabase.GetTurnoAbiertoAsync();
-        CalcularTiempo();
+            if (TurnoActivo is null)
+            {
+                TurnoActivo = await _apiTurnos.AbrirTurnoAsync();
+                CalcularTiempo();
+                _timer.Start();
+                MensajeEstado = "Turno iniciado correctamente";
+            }
+            else
+            {
+                await _apiTurnos.CerrarTurnoAsync(TurnoActivo.Id);
+                TurnoActivo = null;
+                _timer.Stop();
+                TiempoTranscurrido = string.Empty;
+                MensajeEstado = "Turno cerrado correctamente";
+            }
+        }
+        catch (HttpRequestException ex) { MensajeError = $"Error de red al cambiar turno: {ex.Message}"; }
+        catch (TaskCanceledException ex) { MensajeError = $"Tiempo de espera agotado: {ex.Message}"; }
+        catch (Exception ex) { MensajeError = $"Error al cambiar turno: {ex.Message}"; }
+        finally { IsRefrescando = false; }
     }
 
     private void CalcularTiempo()
     {
         if (TurnoActivo?.FechaInicio != null)
         {
-            var diferencia = DateTime.Now - TurnoActivo.FechaInicio;
+            var diferencia = DateTime.UtcNow - DateTime.SpecifyKind(TurnoActivo.FechaInicio, DateTimeKind.Utc);
+            if (diferencia < TimeSpan.Zero) diferencia = TimeSpan.Zero;
             TiempoTranscurrido = $"Tiempo Activo: {diferencia.Hours}h {diferencia.Minutes}m {diferencia.Seconds}s";
         }
     }

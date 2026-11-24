@@ -22,6 +22,108 @@ namespace APIRest_min.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("APIRest_min.Datos.Repartidor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Repartidores");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Activo = true,
+                            Apellido = "Torres",
+                            Email = "miguel.torres@example.com",
+                            FechaRegistro = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Nombre = "Miguel",
+                            Telefono = "123456789",
+                            Usuario = "miguel"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Activo = true,
+                            Apellido = "Delgado",
+                            Email = "ana.delgado@example.com",
+                            FechaRegistro = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Nombre = "Ana",
+                            Telefono = "987654321",
+                            Usuario = "ana"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Activo = true,
+                            Apellido = "Ramirez",
+                            Email = "carlos.ramirez@example.com",
+                            FechaRegistro = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Nombre = "Carlos",
+                            Telefono = "555555555",
+                            Usuario = "carlos"
+                        });
+                });
+
+            modelBuilder.Entity("APIRest_min.Datos.Turno", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("FechaFin")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double?>("LatitudInicio")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("LongitudInicio")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("RepartidorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Turnos");
+                });
+
             modelBuilder.Entity("Parada", b =>
                 {
                     b.Property<int>("Id")

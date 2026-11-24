@@ -58,7 +58,8 @@
                     <VerticalStackLayout Padding="0,6">
                         <Label Text="{Binding Cliente}" />
                         <Label Text="{Binding ModificadoEn,
-                                      StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                                      Converter={StaticResource UtcALocal},
+                                        StringFormat='{0:dd/MM/yyyy HH:mm}'}"
                                FontSize="12" />
                     </VerticalStackLayout>
                 </DataTemplate>

@@ -57,7 +57,18 @@ namespace UltimaMilla.Repartidor
                 client.Timeout = TimeSpan.FromSeconds(10);
             });
 
+            builder.Services.AddHttpClient<ApiRepartidoresService>(c =>
+            {
+                c.BaseAddress = new Uri(ApiConfig.BaseUrl);
+                c.Timeout = TimeSpan.FromSeconds(10);
+            });
 
+            builder.Services.AddHttpClient<ApiTurnosService>(c =>
+            {
+                c.BaseAddress = new Uri(ApiConfig.BaseUrl);
+                c.Timeout = TimeSpan.FromSeconds(10);
+            });
+            });
 
 
             return builder.Build();

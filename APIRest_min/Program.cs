@@ -101,6 +101,55 @@ app.MapDelete("/api/paradas/{id:int}", async (int id, ParadasContext db) =>
     return Results.NoContent();
 });
 
+// --- REPARTIDORES (solo lectura) -------------------------------------
+app.MapGet("/api/repartidores", async (ParadasContext db) =>
+    await db.Repartidores.Where(r => r.Activo)
+                         .OrderBy(r => r.Nombre)
+                         .ToListAsync());
+
+app.MapGet("/api/repartidores/{id:int}", async (int id, ParadasContext db) =>
+    await db.Repartidores.FindAsync(id) is Repartidor r
+        ? Results.Ok(r)
+        : Results.NotFound());
+
+// --- TURNOS (check-in / check-out / consulta) ------------------------
+app.MapPost("/api/turnos", async (Turno nuevo, ParadasContext db) =>
+{
+    if (nuevo.RepartidorId <= 0 || await db.Repartidores.FindAsync(nuevo.RepartidorId) is null)
+        return Results.BadRequest("Debe indicar un repartidor valido para abrir el turno.");
+
+    var turnoAbierto = await db.Turnos
+        .Where(t => t.RepartidorId == nuevo.RepartidorId && t.FechaFin == null)
+        .OrderByDescending(t => t.FechaInicio)
+        .FirstOrDefaultAsync();
+
+    if (turnoAbierto != null)
+        return Results.Conflict("El repartidor ya tiene un turno abierto.");
+
+    nuevo.Id = 0;                        // lo genera Postgres
+    nuevo.FechaInicio = DateTime.UtcNow; // la hora la pone el servidor
+    nuevo.FechaFin = null;
+    db.Turnos.Add(nuevo);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/turnos/{nuevo.Id}", nuevo);
+});
+
+app.MapPut("/api/turnos/{id:int}/cerrar", async (int id, ParadasContext db) =>
+{
+    var turno = await db.Turnos.FindAsync(id);
+    if (turno is null) return Results.NotFound();
+    if (turno.FechaFin is not null) return Results.Conflict("El turno ya estaba cerrado.");
+
+    turno.FechaFin = DateTime.UtcNow;
+    await db.SaveChangesAsync();
+    return Results.Ok(turno);
+});
+
+app.MapGet("/api/turnos", async (int repartidorId, ParadasContext db) =>
+    await db.Turnos.Where(t => t.RepartidorId == repartidorId)
+                   .OrderByDescending(t => t.FechaInicio)
+                   .ToListAsync());
+
 app.Run();
 
 // ---------------------------------------------------------------------

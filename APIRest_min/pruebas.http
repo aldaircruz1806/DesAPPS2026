@@ -2,8 +2,8 @@
 @nube  = https://ultimamilla-api-lopez.onrender.com
  
 # Deja activa UNA sola de las dos líneas siguientes:
-@host = {{nube}}
-# @host = {{local}}
+# @host = {{nube}}
+ @host = {{local}}
 
  
 ### Todas las paradas (las seis)
@@ -71,3 +71,28 @@ Content-Type: application/json
   "latitud": 20.6,
   "longitud": -103.3
 }
+
+### 1. Listar repartidores
+GET {{host}}/api/repartidores
+
+### 2. Abrir turno (Check-in)
+POST {{host}}/api/turnos
+Content-Type: application/json
+
+{
+  "repartidorId": 1
+}
+
+### 3. Probar turno duplicado (debe dar 409 Conflict)
+POST {{host}}/api/turnos
+Content-Type: application/json
+
+{
+  "repartidorId": 1
+}
+
+### 4. Consultar turnos del repartidor 1
+GET {{host}}/api/turnos?repartidorId=1
+
+### 5. Cerrar el turno (cambia el 1 por el Id que devolvio el POST)
+PUT {{host}}/api/turnos/1/cerrar

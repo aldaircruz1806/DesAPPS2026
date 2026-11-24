@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using UltimaMilla.Repartidor.Models;
 using UltimaMilla.Repartidor.Services;
+using UltimaMilla.Repartidor.Helpers;
 
 namespace UltimaMilla.Repartidor.ViewModels;
 
@@ -44,14 +45,16 @@ public partial class HistoricoViewModel : ObservableObject
             MensajeEstado = string.Empty;
 
             var todas = await _api.ObtenerParadasAsync(_sesionActual.RepartidorId);
-            var ahora = DateTime.UtcNow;
+            var ahora = DateTime.Now;
             var desdeSemana = ahora.AddDays(-7);
-            var desdeMes = new DateTime(ahora.Year, ahora.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var desdeMes = new DateTime(ahora.Year, ahora.Month, 1);
 
-            EntregasEstaSemana = todas.Count(p => p.Estado == EstadoEntrega.Entregada && p.ModificadoEn >= desdeSemana);
+            EntregasEstaSemana = todas.Count(p =>
+                p.Estado == EstadoEntrega.Entregada &&
+                p.ModificadoEn.AHoraLocal() >= desdeSemana);
 
             var delMes = todas
-                .Where(p => p.Estado == EstadoEntrega.Entregada && p.ModificadoEn >= desdeMes)
+                .Where(p => p.Estado == EstadoEntrega.Entregada && p.ModificadoEn.AHoraLocal() >= desdeMes)
                 .OrderByDescending(p => p.ModificadoEn)
                 .ToList();
 
